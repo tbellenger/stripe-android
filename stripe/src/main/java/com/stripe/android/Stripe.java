@@ -2,18 +2,20 @@ package com.stripe.android;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
 import com.stripe.android.compat.AsyncTask;
 import com.stripe.android.model.Card;
 import com.stripe.android.model.Token;
+import com.stripe.android.util.TextUtils;
 import com.stripe.exception.AuthenticationException;
 
 public class Stripe {
     private String defaultPublishableKey;
 
-    TokenCreator tokenCreator = new TokenCreator() {
+    public TokenCreator tokenCreator = new TokenCreator() {
         @Override
         public void create(final Card card, final String publishableKey, final Executor executor,
                 final TokenCallback callback) {
@@ -40,7 +42,7 @@ public class Stripe {
         }
     };
 
-    TokenRequester tokenRequester = new TokenRequester() {
+    public TokenRequester tokenRequester = new TokenRequester() {
           @Override
           public void request(final String tokenId, final String publishableKey,
                   final Executor executor, final TokenCallback callback) {
@@ -172,18 +174,27 @@ public class Stripe {
 
     private Map<String, Object> hashMapFromCard(Card card) {
         Map<String, Object> tokenParams = new HashMap<String, Object>();
+
         Map<String, Object> cardParams = new HashMap<String, Object>();
-        cardParams.put("number", card.getNumber());
-        cardParams.put("cvc", card.getCVC());
+        cardParams.put("number", TextUtils.nullIfBlank(card.getNumber()));
+        cardParams.put("cvc", TextUtils.nullIfBlank(card.getCVC()));
         cardParams.put("exp_month", card.getExpMonth());
         cardParams.put("exp_year", card.getExpYear());
-        cardParams.put("name", card.getName());
-        cardParams.put("address_line1", card.getAddressLine1());
-        cardParams.put("address_line2", card.getAddressLine2());
-        cardParams.put("address_city", card.getAddressCity());
-        cardParams.put("address_zip", card.getAddressZip());
-        cardParams.put("address_state", card.getAddressState());
-        cardParams.put("address_country", card.getAddressCountry());
+        cardParams.put("name", TextUtils.nullIfBlank(card.getName()));
+        cardParams.put("address_line1", TextUtils.nullIfBlank(card.getAddressLine1()));
+        cardParams.put("address_line2", TextUtils.nullIfBlank(card.getAddressLine2()));
+        cardParams.put("address_city", TextUtils.nullIfBlank(card.getAddressCity()));
+        cardParams.put("address_zip", TextUtils.nullIfBlank(card.getAddressZip()));
+        cardParams.put("address_state", TextUtils.nullIfBlank(card.getAddressState()));
+        cardParams.put("address_country", TextUtils.nullIfBlank(card.getAddressCountry()));
+
+        // Remove all null values; they cause validation errors
+        for (String key : new HashSet<String>(cardParams.keySet())) {
+            if (cardParams.get(key) == null) {
+                cardParams.remove(key);
+            }
+        }
+
         tokenParams.put("card", cardParams);
         return tokenParams;
     }

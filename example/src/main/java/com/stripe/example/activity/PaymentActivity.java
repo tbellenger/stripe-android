@@ -18,16 +18,11 @@ import com.stripe.example.TokenList;
 public class PaymentActivity extends FragmentActivity {
 
     /*
-     * You need to set this to your stripe test publishable key.
+     * Change this to your publishable key.
      *
-     * For more info, see https://stripe.com/docs/stripe.js
-     *
-     * E.g.
-     *
-     *   private static final String publishableKey = "pk_something123456789";
-     *
+     * You can get your key here: https://manage.stripe.com/account/apikeys
      */
-    public static final String PUBLISHABLE_KEY = YOUR_PUBLISHABLE_KEY;
+    public static final String PUBLISHABLE_KEY = "pk_test_6pRNASCoBOKtIshFeQd4XMUh";
 
     private ProgressDialogFragment progressFragment;
 
@@ -63,8 +58,14 @@ public class PaymentActivity extends FragmentActivity {
                             finishProgress();
                         }
                     });
+        } else if (!card.validateNumber()) {
+        	handleError("The card number that you entered is invalid");
+        } else if (!card.validateExpiryDate()) {
+        	handleError("The expiration date that you entered is invalid");
+        } else if (!card.validateCVC()) {
+        	handleError("The CVC code that you entered is invalid");
         } else {
-            handleError("You did not enter a valid card");
+        	handleError("The card details that you entered are invalid");
         }
     }
 
